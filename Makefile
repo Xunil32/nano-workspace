@@ -47,12 +47,15 @@ build: git.clone.done boost
 	mkdir -p $(BUILDDIR) $(DATAPATH)
 	cd $(BUILDDIR) && cmake \
         -G "Unix Makefiles" \
-        -DNANO_STACKTRACE_BACKTRACE=ON \
-        -DNANO_GUI=ON \
-        -DNANO_TEST=ON \
-        -DCMAKE_BUILD_TYPE=Debug \
-        ../nano-node
-	cd $(BUILDDIR) && $(MAKE) -j$(PARALLELISM)
+	 -DCI_BUILD=${CI_BUILD} \
+	 -DBOOST_ROOT=${BOOST_ROOT} -DPORTABLE=1 \
+	 -DACTIVE_NETWORK=nano_live_network \
+	 -DNANO_POW_SERVER=ON -DNANO_SHARED_BOOST=ON  ../nano-node
+	cd $(BUILDDIR) && \
+	make nano_node -j $(nproc) && \
+	make nano_rpc -j $(nproc) && \
+	make nano_pow_server -j $(nproc)
+	#$(MAKE) -j$(PARALLELISM)
 	#cd $(BUILDDIR) && ./nano_node --diagnostics --data_path ../$(DATAPATH)
 
 # download a copy of the latest ledger and check the hash then inflate it
